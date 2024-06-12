@@ -515,6 +515,7 @@ describe('cli', () => {
 									var contents = fs
 										.readFileSync(`${subdir}/${name}`, 'utf-8')
 										.replace(/\r\n/g, '\n')
+										.replace(/\\r\\n/g, '\\n')
 										.trim();
 
 									if (path.extname(name) === '.map') {

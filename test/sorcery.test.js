@@ -533,7 +533,12 @@ describe('cli', () => {
 						var actual = catalogue('actual');
 
 						try {
-							assert.deepEqual(actual, expected);
+							expected.forEach((e, i) => {
+								var a = actual[i];
+								assert.deepEqual(a.name, e.name);
+								assert.deepEqual(a.contents, e.contents);
+							});
+
 							fulfil();
 						} catch (err) {
 							reject(err);

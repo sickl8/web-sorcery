@@ -21,7 +21,7 @@ export default class Node {
         tracingTime: number;
         untraceable: number;
     };
-    load(sourcesContentByPath: any, sourceMapByPath: any): any;
+    load(sourcesContentByPath: any, sourceMapByPath: any): Promise<any>;
     loadSync(sourcesContentByPath: any, sourceMapByPath: any): void;
     /**
      * Traces a segment back to its origin

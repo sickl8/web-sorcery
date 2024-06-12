@@ -9,7 +9,7 @@
 export function load(file: string, options: {
     content?: Record<string, string>;
     sourcemaps?: Record<string, any>;
-}): any;
+}): Promise<Chain>;
 /**
  * @param {string} file
  * @param {{

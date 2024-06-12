@@ -12,7 +12,7 @@ export default class Chain {
     };
     apply(options?: {}): SourceMap;
     trace(oneBasedLineIndex: any, zeroBasedColumnIndex: any): any;
-    write(dest: any, options: any): Promise<any>;
+    write(dest: any, options: any): Promise<void[]>;
     writeSync(dest: any, options: any): void;
 }
 import SourceMap from './SourceMap.js';

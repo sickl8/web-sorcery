@@ -474,78 +474,72 @@ describe('cli', () => {
 		if (dir[0] === '.') return;
 
 		it(dir, async () => {
-			dir = path.resolve('cli', dir);
-			rimraf.sync(`${dir}/actual`);
-			fs.mkdirSync(`${dir}/actual`);
+			const cwd = path.resolve('cli', dir);
+			rimraf.sync(`${cwd}/actual`);
+			fs.mkdirSync(`${cwd}/actual`);
 
-			if (fs.existsSync(`${dir}/pre.js`)) {
-				console.log(`${dir} pre 1`);
+			if (fs.existsSync(`${cwd}/pre.js`)) {
+				console.log(`${cwd} pre 1`);
 				const module = await import(`./cli/${dir}/pre.js`);
-				console.log(`${dir} pre 2`);
+				console.log(`${cwd} pre 2`);
 				module.default();
-				console.log(`${dir} pre 3`);
+				console.log(`${cwd} pre 3`);
 			}
 
 			var command = fs
-				.readFileSync(`${dir}/command.sh`, 'utf-8')
+				.readFileSync(`${cwd}/command.sh`, 'utf-8')
 				.replace('sorcery', 'node ' + path.resolve('../bin/sorcery'));
 
 			return new Promise((fulfil, reject) => {
-				child_process.exec(
-					command,
-					{
-						cwd: dir
-					},
-					async (err, stdout, stderr) => {
-						if (err) return reject(err);
+				child_process.exec(command, { cwd }, async (err, stdout, stderr) => {
+					if (err) return reject(err);
 
-						if (stdout) console.log(stdout);
-						if (stderr) console.error(stderr);
+					if (stdout) console.log(stdout);
+					if (stderr) console.error(stderr);
 
-						if (fs.existsSync(`${dir}/post.js`)) {
-							console.log(1, dir);
-							const module = await import(`./cli/${dir}/post.js`);
-							console.log(2);
-							module.default();
-						}
-
-						function catalogue(subdir) {
-							subdir = path.resolve(dir, subdir);
-
-							return glob('**/*.js?(.map)', { cwd: subdir })
-								.sort()
-								.map((name) => {
-									var contents = fs
-										.readFileSync(`${subdir}/${name}`, 'utf-8')
-										.trim();
-
-									if (path.extname(name) === '.map') {
-										contents = JSON.parse(contents);
-									}
-
-									return {
-										name: name,
-										contents: contents
-									};
-								});
-						}
-
-						var expected = catalogue('expected');
-						var actual = catalogue('actual');
-
-						try {
-							expected.forEach((e, i) => {
-								var a = actual[i];
-								assert.deepEqual(a.name, e.name);
-								assert.deepEqual(a.contents, e.contents);
-							});
-
-							fulfil();
-						} catch (err) {
-							reject(err);
-						}
+					if (fs.existsSync(`${cwd}/post.js`)) {
+						console.log(1, cwd);
+						const module = await import(`./cli/${dir}/post.js`);
+						console.log(2);
+						module.default();
 					}
-				);
+
+					function catalogue(subdir) {
+						subdir = path.resolve(cwd, subdir);
+
+						return glob('**/*.js?(.map)', { cwd: subdir })
+							.sort()
+							.map((name) => {
+								var contents = fs
+									.readFileSync(`${subdir}/${name}`, 'utf-8')
+									.trim();
+
+								if (path.extname(name) === '.map') {
+									contents = JSON.parse(contents);
+								}
+
+								return {
+									name: name,
+									contents: contents
+								};
+							});
+					}
+
+					var expected = catalogue('expected');
+					var actual = catalogue('actual');
+
+					try {
+						expected.forEach((e, i) => {
+							var a = actual[i];
+							assert.deepEqual(a.name, e.name);
+							assert.deepEqual(a.contents, e.contents);
+						});
+
+						fulfil();
+					} catch (err) {
+						reject(err);
+					}
+				});
 			});
 		});
 	});

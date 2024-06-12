@@ -1,5 +1,6 @@
 import { basename, dirname, extname, relative, resolve } from 'node:path';
-import { writeFile, writeFileSync } from 'sander';
+import * as fs from 'node:fs';
+import { writeFile } from 'node:fs/promises';
 import { encode } from '@jridgewell/sourcemap-codec';
 import SourceMap from './SourceMap.js';
 import slash from './utils/slash.js';
@@ -135,6 +136,10 @@ export default class Chain {
 
 		const { resolved, content, map } = processWriteOptions(dest, this, options);
 
+		try {
+			fs.mkdirSync(dirname(resolved), { recursive: true });
+		} catch {}
+
 		let promises = [writeFile(resolved, content)];
 
 		if (!options.inline) {
@@ -154,10 +159,14 @@ export default class Chain {
 
 		const { resolved, content, map } = processWriteOptions(dest, this, options);
 
-		writeFileSync(resolved, content);
+		try {
+			fs.mkdirSync(dirname(resolved), { recursive: true });
+		} catch {}
+
+		fs.writeFileSync(resolved, content);
 
 		if (!options.inline) {
-			writeFileSync(resolved + '.map', map.toString());
+			fs.writeFileSync(resolved + '.map', map.toString());
 		}
 	}
 }

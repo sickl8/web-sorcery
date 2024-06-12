@@ -2,7 +2,7 @@ import path from 'node:path';
 import assert from 'node:assert';
 import child_process from 'node:child_process';
 import fs from 'node:fs';
-import glob from 'glob';
+import glob from 'tiny-glob/sync.js';
 import { rimraf } from 'rimraf';
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import { SourceMapConsumer } from 'source-map';
@@ -304,22 +304,19 @@ describe('chain.write()', () => {
 		});
 	});
 
-	it('ensures sourceMappingURL is encoded (#6)', () => {
-		return sorcery
-			.load('samples/4/tmp/file with spaces.esperanto.js')
-			.then((chain) => {
-				chain.write('.tmp/with-spaces/file with spaces.js').then(() => {
-					const result = fs.readFileSync(
-						'.tmp/with-spaces/file with spaces.js',
-						'utf-8'
-					);
+	it('ensures sourceMappingURL is encoded (#6)', async () => {
+		const chain = await sorcery.load(
+			'samples/4/tmp/file with spaces.esperanto.js'
+		);
 
-					const sourceMappingURL = /sourceMappingURL=([^\r\n]+)/.exec(
-						result
-					)[1];
-					assert.equal(sourceMappingURL, 'file%20with%20spaces.js.map');
-				});
-			});
+		await chain.write('.tmp/with-spaces/file with spaces.js');
+		const result = fs.readFileSync(
+			'.tmp/with-spaces/file with spaces.js',
+			'utf-8'
+		);
+
+		const sourceMappingURL = /sourceMappingURL=([^\r\n]+)/.exec(result)[1];
+		assert.equal(sourceMappingURL, 'file%20with%20spaces.js.map');
 	});
 
 	it('allows the base to be specified as something other than the destination file', () => {
@@ -510,8 +507,7 @@ describe('cli', () => {
 						function catalogue(subdir) {
 							subdir = path.resolve(dir, subdir);
 
-							return glob
-								.sync('**/*.js?(.map)', { cwd: subdir })
+							return glob('**/*.js?(.map)', { cwd: subdir })
 								.sort()
 								.map((name) => {
 									var contents = fs

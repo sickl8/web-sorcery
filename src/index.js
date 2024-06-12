@@ -2,6 +2,14 @@ import { resolve } from 'node:path';
 import Node from './Node.js';
 import Chain from './Chain.js';
 
+/**
+ * @param {string} file
+ * @param {{
+ *   content?: Record<string, string>;
+ *   sourcemaps?: Record<string, any>;
+ * }} options
+ * @returns
+ */
 export function load(file, options) {
 	const { node, sourcesContentByPath, sourceMapByPath } = init(file, options);
 
@@ -12,6 +20,14 @@ export function load(file, options) {
 		);
 }
 
+/**
+ * @param {string} file
+ * @param {{
+ *   content?: Record<string, string>;
+ *   sourcemaps?: Record<string, any>;
+ * }} options
+ * @returns
+ */
 export function loadSync(file, options = {}) {
 	const { node, sourcesContentByPath, sourceMapByPath } = init(file, options);
 
@@ -19,6 +35,13 @@ export function loadSync(file, options = {}) {
 	return node.isOriginalSource ? null : new Chain(node, sourcesContentByPath);
 }
 
+/**
+ * @param {string} file
+ * @param {{
+ *   content?: Record<string, string>;
+ *   sourcemaps?: Record<string, any>;
+ * }} options
+ */
 function init(file, options = {}) {
 	const node = new Node({ file });
 

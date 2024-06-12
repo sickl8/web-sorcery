@@ -1,4 +1,3 @@
-import { Promise } from 'sander';
 import getMapFromUrl from './getMapFromUrl.js';
 import getSourceMappingUrl from './getSourceMappingUrl.js';
 

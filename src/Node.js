@@ -1,9 +1,16 @@
 import { dirname, resolve } from 'node:path';
-import { readFile, readFileSync, Promise } from 'sander';
+import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { decode } from '@jridgewell/sourcemap-codec';
 import getMap from './utils/getMap.js';
 
 export default class Node {
+	/**
+	 * @param {{
+	 *   file?: string;
+	 *   content?: string;
+	 * }} opts
+	 */
 	constructor({ file, content }) {
 		this.file = file ? resolve(file) : null;
 		this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
@@ -110,13 +117,13 @@ export default class Node {
 	   segment as found in `this`
 	 * @param {number} columnIndex - the zero-based column index of the
 	   segment as found in `this`
-	 * @param {string || null} - if specified, the name that should be
+	 * @param {string | null} name - if specified, the name that should be
 	   (eventually) returned, as it is closest to the generated code
 	 * @returns {object}
 	     @property {string} source - the filepath of the source
 	     @property {number} line - the one-based line index
 	     @property {number} column - the zero-based column index
-	     @property {string || null} name - the name corresponding
+	     @property {string | null} name - the name corresponding
 	     to the segment being traced
 	 */
 	trace(lineIndex, columnIndex, name) {
@@ -188,7 +195,7 @@ function getContent(node, sourcesContentByPath) {
 	}
 
 	if (!node.content) {
-		return readFile(node.file, { encoding: 'utf-8' });
+		return readFile(node.file, 'utf-8');
 	}
 
 	return Promise.resolve(node.content);

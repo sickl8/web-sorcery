@@ -1,5 +1,5 @@
-import { dirname, resolve } from 'path';
-import { readFile, readFileSync, Promise } from 'sander';
+import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import atob from './atob.js';
 import SOURCEMAPPING_URL from './sourceMappingURL.js';
 
@@ -40,8 +40,7 @@ export default function getMapFromUrl(url, base, sync) {
 	if (sync) {
 		return parseJSON(readFileSync(url, { encoding: 'utf-8' }), url);
 	} else {
-		return readFile(url, { encoding: 'utf-8' }).then((json) =>
-			parseJSON(json, url)
-		);
+		const json = readFileSync(url, 'utf-8');
+		return Promise.resolve(parseJSON(json, url));
 	}
 }

@@ -531,7 +531,10 @@ describe('cli', () => {
 						var actual = catalogue('actual');
 
 						try {
-							assert.deepEqual(actual, expected);
+							assert.deepEqual(
+								actual.replace(/\r\n/g, '\n'),
+								expected.replace(/\r\n/g, '\n')
+							);
 							fulfil();
 						} catch (err) {
 							reject(err);

@@ -29,6 +29,7 @@
 		"remap-istanbul": "^0.6.3",
 		"rimraf": "^5.0.7",
 		"source-map": "^0.5.3",
+		"tiny-glob": "^0.2.9",
 		"uglify-js": "^2.6.2"
 	},
 	"bin": {
@@ -38,7 +39,8 @@
 		"prepare-tests": "node test/samples/prepare-tests.js",
 		"prepublish": "bun test",
 		"lint": "prettier . && eslint src",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"test": "node test/sorcery.test.js"
 	},
 	"files": [
 		"src/",

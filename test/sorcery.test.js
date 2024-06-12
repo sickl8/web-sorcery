@@ -4,11 +4,14 @@ import child_process from 'node:child_process';
 import fs from 'node:fs';
 import glob from 'glob';
 import { rimraf } from 'rimraf';
-import { describe, it, beforeEach, afterEach } from 'bun:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import { SourceMapConsumer } from 'source-map';
 import * as sorcery from '../src/index.js';
+import { fileURLToPath } from 'node:url';
 
-process.chdir(__dirname);
+const dirname = fileURLToPath(new URL('.', import.meta.url).href);
+
+process.chdir(dirname);
 
 beforeEach(() => rimraf.sync('.tmp'));
 afterEach(() => rimraf.sync('.tmp'));
@@ -216,10 +219,7 @@ describe('chain.write()', () => {
 							'../../samples/1/tmp/helloworld.coffee'
 						]);
 						assert.deepEqual(map.sourcesContent, [
-							fs.readFileSync(
-								`${__dirname}/samples/1/tmp/helloworld.coffee`,
-								'utf-8'
-							)
+							fs.readFileSync(`samples/1/tmp/helloworld.coffee`, 'utf-8')
 						]);
 
 						const loc = smc.originalPositionFor({ line: 1, column: 31 });
@@ -459,10 +459,7 @@ console.log "the answer is #{answer}"`;
 					'../../samples/1/tmp/helloworld.coffee'
 				]);
 				assert.deepEqual(map.sourcesContent, [
-					fs.readFileSync(
-						`${__dirname}/samples/1/tmp/helloworld.coffee`,
-						'utf-8'
-					)
+					fs.readFileSync(`samples/1/tmp/helloworld.coffee`, 'utf-8')
 				]);
 
 				const loc = smc.originalPositionFor({ line: 1, column: 31 });
@@ -479,7 +476,7 @@ describe('cli', () => {
 	fs.readdirSync('cli').forEach((dir) => {
 		if (dir[0] === '.') return;
 
-		it(dir, async (done) => {
+		it(dir, async () => {
 			dir = path.resolve('cli', dir);
 			rimraf.sync(`${dir}/actual`);
 			fs.mkdirSync(`${dir}/actual`);
@@ -491,60 +488,59 @@ describe('cli', () => {
 
 			var command = fs
 				.readFileSync(`${dir}/command.sh`, 'utf-8')
-				.replace(
-					'sorcery',
-					'node ' + path.resolve(__dirname, '../bin/sorcery')
+				.replace('sorcery', 'node ' + path.resolve('../bin/sorcery'));
+
+			return new Promise((fulfil, reject) => {
+				child_process.exec(
+					command,
+					{
+						cwd: dir
+					},
+					async (err, stdout, stderr) => {
+						if (err) return reject(err);
+
+						if (stdout) console.log(stdout);
+						if (stderr) console.error(stderr);
+
+						if (fs.existsSync(`${dir}/post.js`)) {
+							const module = await import(path.join(dir, 'post.js'));
+							module.default();
+						}
+
+						function catalogue(subdir) {
+							subdir = path.resolve(dir, subdir);
+
+							return glob
+								.sync('**/*.js?(.map)', { cwd: subdir })
+								.sort()
+								.map((name) => {
+									var contents = fs
+										.readFileSync(`${subdir}/${name}`, 'utf-8')
+										.trim();
+
+									if (path.extname(name) === '.map') {
+										contents = JSON.parse(contents);
+									}
+
+									return {
+										name: name,
+										contents: contents
+									};
+								});
+						}
+
+						var expected = catalogue('expected');
+						var actual = catalogue('actual');
+
+						try {
+							assert.deepEqual(actual, expected);
+							fulfil();
+						} catch (err) {
+							reject(err);
+						}
+					}
 				);
-
-			child_process.exec(
-				command,
-				{
-					cwd: dir
-				},
-				async (err, stdout, stderr) => {
-					if (err) return done(err);
-
-					if (stdout) console.log(stdout);
-					if (stderr) console.error(stderr);
-
-					if (fs.existsSync(`${dir}/post.js`)) {
-						const module = await import(path.join(dir, 'post.js'));
-						module.default();
-					}
-
-					function catalogue(subdir) {
-						subdir = path.resolve(dir, subdir);
-
-						return glob
-							.sync('**/*.js?(.map)', { cwd: subdir })
-							.sort()
-							.map((name) => {
-								var contents = fs
-									.readFileSync(`${subdir}/${name}`, 'utf-8')
-									.trim();
-
-								if (path.extname(name) === '.map') {
-									contents = JSON.parse(contents);
-								}
-
-								return {
-									name: name,
-									contents: contents
-								};
-							});
-					}
-
-					var expected = catalogue('expected');
-					var actual = catalogue('actual');
-
-					try {
-						assert.deepEqual(actual, expected);
-						done();
-					} catch (err) {
-						done(err);
-					}
-				}
-			);
+			});
 		});
 	});
 });

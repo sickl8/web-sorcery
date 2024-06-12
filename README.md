@@ -21,7 +21,7 @@ npm install sorcery
 ```
 
 ```js
-var sorcery = require('sorcery');
+import * as sorcery from 'sorcery';
 
 sorcery.load('some/generated/code.min.js').then(function (chain) {
   // generate a flattened sourcemap

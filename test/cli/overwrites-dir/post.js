@@ -1,12 +1,15 @@
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export default function () {
-	fs.unlinkSync(`${__dirname}/actual/foo.coffee`);
-	fs.unlinkSync(`${__dirname}/actual/bar.coffee`);
+	const dirname = fileURLToPath(new URL('.', import.meta.url));
 
-	fs.unlinkSync(`${__dirname}/actual/foo.js`);
-	fs.unlinkSync(`${__dirname}/actual/bar.js`);
+	fs.unlinkSync(`${dirname}/actual/foo.coffee`);
+	fs.unlinkSync(`${dirname}/actual/bar.coffee`);
 
-	fs.unlinkSync(`${__dirname}/actual/foo.js.map`);
-	fs.unlinkSync(`${__dirname}/actual/bar.js.map`);
+	fs.unlinkSync(`${dirname}/actual/foo.js`);
+	fs.unlinkSync(`${dirname}/actual/bar.js`);
+
+	fs.unlinkSync(`${dirname}/actual/foo.js.map`);
+	fs.unlinkSync(`${dirname}/actual/bar.js.map`);
 }

@@ -1,12 +1,12 @@
-var sander = require( 'sander' );
+import fs from 'node:fs';
 
-module.exports = function () {
-	sander.rimrafSync( __dirname, 'actual', 'foo.coffee' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.coffee' );
+export default function () {
+	fs.unlinkSync(`${__dirname}/actual/foo.coffee`);
+	fs.unlinkSync(`${__dirname}/actual/bar.coffee`);
 
-	sander.rimrafSync( __dirname, 'actual', 'foo.js' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.js' );
+	fs.unlinkSync(`${__dirname}/actual/foo.js`);
+	fs.unlinkSync(`${__dirname}/actual/bar.js`);
 
-	sander.rimrafSync( __dirname, 'actual', 'foo.js.map' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.js.map' );
-};
+	fs.unlinkSync(`${__dirname}/actual/foo.js.map`);
+	fs.unlinkSync(`${__dirname}/actual/bar.js.map`);
+}

@@ -522,7 +522,7 @@ describe('cli', () => {
 
 									return {
 										name: name,
-										contents: contents
+										contents: contents.replace(/\r\n/g, '\n')
 									};
 								});
 						}
@@ -531,10 +531,7 @@ describe('cli', () => {
 						var actual = catalogue('actual');
 
 						try {
-							assert.deepEqual(
-								actual.replace(/\r\n/g, '\n'),
-								expected.replace(/\r\n/g, '\n')
-							);
+							assert.deepEqual(actual, expected);
 							fulfil();
 						} catch (err) {
 							reject(err);

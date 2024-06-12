@@ -500,7 +500,9 @@ describe('cli', () => {
 						if (stderr) console.error(stderr);
 
 						if (fs.existsSync(`${dir}/post.js`)) {
+							console.log(1, dir);
 							const module = await import(path.join(dir, 'post.js'));
+							console.log(2);
 							module.default();
 						}
 

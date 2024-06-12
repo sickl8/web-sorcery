@@ -1,4 +1,4 @@
-import { basename, dirname, extname, relative, resolve } from 'path';
+import { basename, dirname, extname, relative, resolve } from 'node:path';
 import { writeFile, writeFileSync } from 'sander';
 import { encode } from '@jridgewell/sourcemap-codec';
 import SourceMap from './SourceMap.js';

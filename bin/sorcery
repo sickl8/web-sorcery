@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-var path = require('path');
-var minimist = require('minimist');
-var sander = require('sander');
-var showHelp = require('./showHelp');
+import path from 'node:path';
+import minimist from 'minimist';
+import sander from 'sander';
+import showHelp from './showHelp.js';
+import * as sorcery from '../src/index.js';
+
 var command;
-var sorcery = require('../');
 
 var validExtensions = { js: true };
 

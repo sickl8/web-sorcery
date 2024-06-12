@@ -4,8 +4,13 @@
 	"version": "0.11.1",
 	"author": "Rich Harris",
 	"repository": "https://github.com/Rich-Harris/sorcery",
-	"main": "dist/sorcery.cjs.js",
-	"jsnext:main": "dist/sorcery.es6.js",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./types/index.d.ts",
+			"default": "./src/index.js"
+		}
+	},
 	"license": "MIT",
 	"dependencies": {
 		"@jridgewell/sourcemap-codec": "^1.4.14",
@@ -24,10 +29,10 @@
 		"glob": "^7.0.3",
 		"istanbul": "^0.4.3",
 		"less": "^2.6.1",
-		"mocha": "^2.4.5",
 		"prettier": "^3.3.2",
 		"promise-map-series": "^0.2.2",
 		"remap-istanbul": "^0.6.3",
+		"rimraf": "^5.0.7",
 		"rollup": "^4.18.0",
 		"source-map": "^0.5.3",
 		"source-map-support": "^0.4.0",
@@ -40,7 +45,7 @@
 		"build": "rm -rf dist && rollup -c rollup.config.mjs",
 		"pretest": "npm run build",
 		"prepare-tests": "node test/samples/prepare-tests.js",
-		"test": "mocha --compilers js:buble/register",
+		"test": "mocha",
 		"prepublish": "npm test",
 		"lint": "prettier . && eslint src",
 		"format": "prettier --write .",

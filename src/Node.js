@@ -1,4 +1,4 @@
-import { dirname, resolve } from 'path';
+import { dirname, resolve } from 'node:path';
 import { readFile, readFileSync, Promise } from 'sander';
 import { decode } from '@jridgewell/sourcemap-codec';
 import getMap from './utils/getMap.js';

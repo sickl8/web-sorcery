@@ -1,5 +1,9 @@
 # changelog
 
+## 1.0.0
+
+- Modernise package ([#191](https://github.com/Rich-Harris/sorcery/pull/191))
+
 ## 0.11.1
 
 - Fix sources content when using `loadSync` ([#185](https://github.com/Rich-Harris/sorcery/pull/185))

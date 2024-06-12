@@ -479,11 +479,8 @@ describe('cli', () => {
 			fs.mkdirSync(`${cwd}/actual`);
 
 			if (fs.existsSync(`${cwd}/pre.js`)) {
-				console.log(`${cwd} pre 1`);
 				const module = await import(`./cli/${dir}/pre.js`);
-				console.log(`${cwd} pre 2`);
 				module.default();
-				console.log(`${cwd} pre 3`);
 			}
 
 			var command = fs
@@ -498,9 +495,7 @@ describe('cli', () => {
 					if (stderr) console.error(stderr);
 
 					if (fs.existsSync(`${cwd}/post.js`)) {
-						console.log(1, cwd);
 						const module = await import(`./cli/${dir}/post.js`);
-						console.log(2);
 						module.default();
 					}
 

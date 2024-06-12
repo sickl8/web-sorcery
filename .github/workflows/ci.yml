@@ -6,10 +6,6 @@ on:
 permissions:
   contents: read # to fetch code (actions/checkout)
 
-env:
-  # We only install Chromium manually
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-
 jobs:
   Tests:
     runs-on: ${{ matrix.os }}
@@ -29,9 +25,9 @@ jobs:
             os: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
@@ -43,9 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: pnpm

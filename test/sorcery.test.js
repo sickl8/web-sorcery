@@ -479,8 +479,11 @@ describe('cli', () => {
 			fs.mkdirSync(`${dir}/actual`);
 
 			if (fs.existsSync(`${dir}/pre.js`)) {
+				console.log('pre 1');
 				const module = await import(path.join(dir, 'pre.js'));
+				console.log('pre 2');
 				module.default();
+				console.log('pre 3');
 			}
 
 			var command = fs
@@ -488,6 +491,8 @@ describe('cli', () => {
 				.replace('sorcery', 'node ' + path.resolve('../bin/sorcery'));
 
 			return new Promise((fulfil, reject) => {
+				console.log({ command });
+
 				child_process.exec(
 					command,
 					{

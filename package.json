@@ -52,5 +52,6 @@
 		"dist/",
 		"bin/",
 		"README.md"
-	]
+	],
+	"packageManager": "pnpm@9.3.0"
 }

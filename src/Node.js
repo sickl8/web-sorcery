@@ -3,30 +3,30 @@ import { readFile, readFileSync, Promise } from 'sander';
 import { decode } from '@jridgewell/sourcemap-codec';
 import getMap from './utils/getMap.js';
 
-export default function Node({ file, content }) {
-	this.file = file ? resolve(file) : null;
-	this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
+export default class Node {
+	constructor({ file, content }) {
+		this.file = file ? resolve(file) : null;
+		this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
 
-	if (!this.file && this.content === null) {
-		throw new Error('A source must specify either file or content');
+		if (!this.file && this.content === null) {
+			throw new Error('A source must specify either file or content');
+		}
+
+		// these get filled in later
+		this.map = null;
+		this.mappings = null;
+		this.sources = null;
+		this.isOriginalSource = null;
+
+		this._stats = {
+			decodingTime: 0,
+			encodingTime: 0,
+			tracingTime: 0,
+
+			untraceable: 0
+		};
 	}
 
-	// these get filled in later
-	this.map = null;
-	this.mappings = null;
-	this.sources = null;
-	this.isOriginalSource = null;
-
-	this._stats = {
-		decodingTime: 0,
-		encodingTime: 0,
-		tracingTime: 0,
-
-		untraceable: 0
-	};
-}
-
-Node.prototype = {
 	load(sourcesContentByPath, sourceMapByPath) {
 		return getContent(this, sourcesContentByPath).then((content) => {
 			this.content = sourcesContentByPath[this.file] = content;
@@ -61,7 +61,7 @@ Node.prototype = {
 				return Promise.all(promises);
 			});
 		});
-	},
+	}
 
 	loadSync(sourcesContentByPath, sourceMapByPath) {
 		if (!this.content) {
@@ -102,7 +102,7 @@ Node.prototype = {
 				return node;
 			});
 		}
-	},
+	}
 
 	/**
 	 * Traces a segment back to its origin
@@ -180,7 +180,7 @@ Node.prototype = {
 			this.map.names[nameIndex] || name
 		);
 	}
-};
+}
 
 function getContent(node, sourcesContentByPath) {
 	if (node.file in sourcesContentByPath) {

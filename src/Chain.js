@@ -13,14 +13,14 @@ const SOURCEMAP_COMMENT = new RegExp(
 	'g'
 );
 
-export default function Chain(node, sourcesContentByPath) {
-	this.node = node;
-	this.sourcesContentByPath = sourcesContentByPath;
+export default class Chain {
+	constructor(node, sourcesContentByPath) {
+		this.node = node;
+		this.sourcesContentByPath = sourcesContentByPath;
 
-	this._stats = {};
-}
+		this._stats = {};
+	}
 
-Chain.prototype = {
 	stat() {
 		return {
 			selfDecodingTime: this._stats.decodingTime / 1e6,
@@ -33,7 +33,7 @@ Chain.prototype = {
 
 			untraceable: this._stats.untraceable
 		};
-	},
+	}
 
 	apply(options = {}) {
 		let allNames = [];
@@ -119,11 +119,11 @@ Chain.prototype = {
 			names: allNames,
 			mappings
 		});
-	},
+	}
 
 	trace(oneBasedLineIndex, zeroBasedColumnIndex) {
 		return this.node.trace(oneBasedLineIndex - 1, zeroBasedColumnIndex, null);
-	},
+	}
 
 	write(dest, options) {
 		if (typeof dest !== 'string') {
@@ -142,7 +142,7 @@ Chain.prototype = {
 		}
 
 		return Promise.all(promises);
-	},
+	}
 
 	writeSync(dest, options) {
 		if (typeof dest !== 'string') {
@@ -160,7 +160,7 @@ Chain.prototype = {
 			writeFileSync(resolved + '.map', map.toString());
 		}
 	}
-};
+}
 
 function processWriteOptions(dest, chain, options) {
 	const resolved = resolve(dest);

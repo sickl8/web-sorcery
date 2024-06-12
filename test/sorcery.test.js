@@ -479,13 +479,14 @@ describe('cli', () => {
 	fs.readdirSync('cli').forEach((dir) => {
 		if (dir[0] === '.') return;
 
-		(/^solo-/.test(dir) ? it.only : it)(dir, (done) => {
+		it(dir, async (done) => {
 			dir = path.resolve('cli', dir);
 			rimraf.sync(`${dir}/actual`);
 			fs.mkdirSync(`${dir}/actual`);
 
 			if (fs.existsSync(`${dir}/pre.js`)) {
-				require(path.join(`${dir}/pre.js`))();
+				const module = await import(path.join(dir, 'pre.js'));
+				module.default();
 			}
 
 			var command = fs
@@ -500,14 +501,15 @@ describe('cli', () => {
 				{
 					cwd: dir
 				},
-				(err, stdout, stderr) => {
+				async (err, stdout, stderr) => {
 					if (err) return done(err);
 
 					if (stdout) console.log(stdout);
 					if (stderr) console.error(stderr);
 
 					if (fs.existsSync(`${dir}/post.js`)) {
-						require(path.join(dir, 'post.js'))();
+						const module = await import(path.join(dir, 'post.js'));
+						module.default();
 					}
 
 					function catalogue(subdir) {

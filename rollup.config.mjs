@@ -22,11 +22,11 @@ export default defineConfig({
 		node({
 			jsnext: true,
 			main: true,
-			skip: [ 'path', 'sander', 'buffer-crc32' ]
+			skip: ['path', 'sander', 'buffer-crc32']
 		}),
 		buble({
 			exclude: 'node_modules/**'
 		})
 	],
-	external: [ 'path', 'sander', 'buffer-crc32' ]
+	external: ['path', 'sander', 'buffer-crc32']
 });

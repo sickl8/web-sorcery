@@ -5,12 +5,15 @@ import SourceMap from './SourceMap.js';
 import slash from './utils/slash.js';
 import SOURCEMAPPING_URL from './utils/sourceMappingURL.js';
 
-const SOURCEMAP_COMMENT = new RegExp( `\n*(?:` +
-	`\\/\\/[@#]\\s*${SOURCEMAPPING_URL}=([^\n]+)|` +      // js
-	`\\/\\*#?\\s*${SOURCEMAPPING_URL}=([^'"]+)\\s\\*\\/)` + // css
-'\\s*$', 'g' );
+const SOURCEMAP_COMMENT = new RegExp(
+	`\n*(?:` +
+		`\\/\\/[@#]\\s*${SOURCEMAPPING_URL}=([^\n]+)|` + // js
+		`\\/\\*#?\\s*${SOURCEMAPPING_URL}=([^'"]+)\\s\\*\\/)` + // css
+		'\\s*$',
+	'g'
+);
 
-export default function Chain ( node, sourcesContentByPath ) {
+export default function Chain(node, sourcesContentByPath) {
 	this.node = node;
 	this.sourcesContentByPath = sourcesContentByPath;
 
@@ -18,10 +21,12 @@ export default function Chain ( node, sourcesContentByPath ) {
 }
 
 Chain.prototype = {
-	stat () {
+	stat() {
 		return {
 			selfDecodingTime: this._stats.decodingTime / 1e6,
-			totalDecodingTime: ( this._stats.decodingTime + tally( this.node.sources, 'decodingTime' ) ) / 1e6,
+			totalDecodingTime:
+				(this._stats.decodingTime + tally(this.node.sources, 'decodingTime')) /
+				1e6,
 
 			encodingTime: this._stats.encodingTime / 1e6,
 			tracingTime: this._stats.tracingTime / 1e6,
@@ -30,28 +35,29 @@ Chain.prototype = {
 		};
 	},
 
-	apply ( options = {} ) {
+	apply(options = {}) {
 		let allNames = [];
 		let allSources = [];
 
-		const applySegment = ( segment, result ) => {
-			if ( segment.length < 4 ) return;
+		const applySegment = (segment, result) => {
+			if (segment.length < 4) return;
 
-			const traced = this.node.sources[ segment[1] ].trace( // source
+			const traced = this.node.sources[segment[1]].trace(
+				// source
 				segment[2], // source code line
 				segment[3], // source code column
-				this.node.map.names[ segment[4] ]
+				this.node.map.names[segment[4]]
 			);
 
-			if ( !traced ) {
+			if (!traced) {
 				this._stats.untraceable += 1;
 				return;
 			}
 
-			let sourceIndex = allSources.indexOf( traced.source );
-			if ( !~sourceIndex ) {
+			let sourceIndex = allSources.indexOf(traced.source);
+			if (!~sourceIndex) {
 				sourceIndex = allSources.length;
-				allSources.push( traced.source );
+				allSources.push(traced.source);
 			}
 
 			let newSegment = [
@@ -61,124 +67,132 @@ Chain.prototype = {
 				traced.column
 			];
 
-			if ( traced.name ) {
-				let nameIndex = allNames.indexOf( traced.name );
-				if ( !~nameIndex ) {
+			if (traced.name) {
+				let nameIndex = allNames.indexOf(traced.name);
+				if (!~nameIndex) {
 					nameIndex = allNames.length;
-					allNames.push( traced.name );
+					allNames.push(traced.name);
 				}
 
 				newSegment[4] = nameIndex;
 			}
 
-			result[ result.length ] = newSegment;
+			result[result.length] = newSegment;
 		};
 
 		// Trace mappings
 		let tracingStart = process.hrtime();
 
 		let i = this.node.mappings.length;
-		let resolved = new Array( i );
+		let resolved = new Array(i);
 
 		let j, line, result;
 
-		while ( i-- ) {
+		while (i--) {
 			line = this.node.mappings[i];
 			resolved[i] = result = [];
 
-			for ( j = 0; j < line.length; j += 1 ) {
-				applySegment( line[j], result );
+			for (j = 0; j < line.length; j += 1) {
+				applySegment(line[j], result);
 			}
 		}
 
-		let tracingTime = process.hrtime( tracingStart );
+		let tracingTime = process.hrtime(tracingStart);
 		this._stats.tracingTime = 1e9 * tracingTime[0] + tracingTime[1];
 
 		// Encode mappings
 		let encodingStart = process.hrtime();
-		let mappings = encode( resolved );
-		let encodingTime = process.hrtime( encodingStart );
+		let mappings = encode(resolved);
+		let encodingTime = process.hrtime(encodingStart);
 		this._stats.encodingTime = 1e9 * encodingTime[0] + encodingTime[1];
 
 		let includeContent = options.includeContent !== false;
 
 		return new SourceMap({
-			file: basename( this.node.file ),
-			sources: allSources.map( source => slash( relative( options.base || dirname( this.node.file ), source ) ) ),
-			sourcesContent: allSources.map( source => includeContent ? this.sourcesContentByPath[ source ] : null ),
+			file: basename(this.node.file),
+			sources: allSources.map((source) =>
+				slash(relative(options.base || dirname(this.node.file), source))
+			),
+			sourcesContent: allSources.map((source) =>
+				includeContent ? this.sourcesContentByPath[source] : null
+			),
 			names: allNames,
 			mappings
 		});
 	},
 
-	trace ( oneBasedLineIndex, zeroBasedColumnIndex ) {
-		return this.node.trace( oneBasedLineIndex - 1, zeroBasedColumnIndex, null );
+	trace(oneBasedLineIndex, zeroBasedColumnIndex) {
+		return this.node.trace(oneBasedLineIndex - 1, zeroBasedColumnIndex, null);
 	},
 
-	write ( dest, options ) {
-		if ( typeof dest !== 'string' ) {
+	write(dest, options) {
+		if (typeof dest !== 'string') {
 			options = dest;
 			dest = this.node.file;
 		}
 
 		options = options || {};
 
-		const { resolved, content, map } = processWriteOptions( dest, this, options );
+		const { resolved, content, map } = processWriteOptions(dest, this, options);
 
-		let promises = [ writeFile( resolved, content ) ];
+		let promises = [writeFile(resolved, content)];
 
-		if ( !options.inline ) {
-			promises.push( writeFile( resolved + '.map', map.toString() ) );
+		if (!options.inline) {
+			promises.push(writeFile(resolved + '.map', map.toString()));
 		}
 
-		return Promise.all( promises );
+		return Promise.all(promises);
 	},
 
-	writeSync ( dest, options ) {
-		if ( typeof dest !== 'string' ) {
+	writeSync(dest, options) {
+		if (typeof dest !== 'string') {
 			options = dest;
 			dest = this.node.file;
 		}
 
 		options = options || {};
 
-		const { resolved, content, map } = processWriteOptions( dest, this, options );
+		const { resolved, content, map } = processWriteOptions(dest, this, options);
 
-		writeFileSync( resolved, content );
+		writeFileSync(resolved, content);
 
-		if ( !options.inline ) {
-			writeFileSync( resolved + '.map', map.toString() );
+		if (!options.inline) {
+			writeFileSync(resolved + '.map', map.toString());
 		}
 	}
 };
 
-function processWriteOptions ( dest, chain, options ) {
-	const resolved = resolve( dest );
+function processWriteOptions(dest, chain, options) {
+	const resolved = resolve(dest);
 
 	const map = chain.apply({
 		includeContent: options.includeContent,
-		base: options.base ? resolve( options.base ) : dirname( resolved )
+		base: options.base ? resolve(options.base) : dirname(resolved)
 	});
 
-	const url = options.inline ? map.toUrl() : ( options.absolutePath ? resolved : basename( resolved ) ) + '.map';
+	const url = options.inline
+		? map.toUrl()
+		: (options.absolutePath ? resolved : basename(resolved)) + '.map';
 
 	// TODO shouldn't url be relative?
-	const content = chain.node.content.replace( SOURCEMAP_COMMENT, '' ) + sourcemapComment( url, resolved );
+	const content =
+		chain.node.content.replace(SOURCEMAP_COMMENT, '') +
+		sourcemapComment(url, resolved);
 
 	return { resolved, content, map };
 }
 
-function tally ( nodes, stat ) {
-	return nodes.reduce( ( total, node ) => {
-		return total + node._stats[ stat ];
-	}, 0 );
+function tally(nodes, stat) {
+	return nodes.reduce((total, node) => {
+		return total + node._stats[stat];
+	}, 0);
 }
 
-function sourcemapComment ( url, dest ) {
-	const ext = extname( dest );
-	url = encodeURI( url );
+function sourcemapComment(url, dest) {
+	const ext = extname(dest);
+	url = encodeURI(url);
 
-	if ( ext === '.css' ) {
+	if (ext === '.css') {
 		return `\n/*# ${SOURCEMAPPING_URL}=${url} */\n`;
 	}
 

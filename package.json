@@ -8,10 +8,10 @@
 	"jsnext:main": "dist/sorcery.es6.js",
 	"license": "MIT",
 	"dependencies": {
+		"@jridgewell/sourcemap-codec": "^1.4.14",
 		"buffer-crc32": "^1.0.0",
 		"minimist": "^1.2.0",
-		"sander": "^0.5.0",
-		"@jridgewell/sourcemap-codec": "^1.4.14"
+		"sander": "^0.5.0"
 	},
 	"devDependencies": {
 		"@rollup/plugin-buble": "^1.0.3",
@@ -25,6 +25,7 @@
 		"istanbul": "^0.4.3",
 		"less": "^2.6.1",
 		"mocha": "^2.4.5",
+		"prettier": "^3.3.2",
 		"promise-map-series": "^0.2.2",
 		"remap-istanbul": "^0.6.3",
 		"rollup": "^4.18.0",
@@ -41,7 +42,8 @@
 		"prepare-tests": "node test/samples/prepare-tests.js",
 		"test": "mocha --compilers js:buble/register",
 		"prepublish": "npm test",
-		"lint": "eslint src",
+		"lint": "prettier . && eslint src",
+		"format": "prettier --write .",
 		"pretest-coverage": "npm run build",
 		"test-coverage": "rm -rf coverage/* && istanbul cover --report json node_modules/.bin/_mocha -- -u exports -R spec test/test.js",
 		"posttest-coverage": "remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.json -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped.lcov -t lcovonly -b dist && remap-istanbul -i coverage/coverage-final.json -o coverage/coverage-remapped -t html -b dist",

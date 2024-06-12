@@ -3,6 +3,6 @@
  * @param {string} str - the string to encode
  * @returns {string}
  */
-export default function btoa ( str ) {
-	return new Buffer( str ).toString( 'base64' );
+export default function btoa(str) {
+	return new Buffer(str).toString('base64');
 }

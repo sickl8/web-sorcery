@@ -1,12 +1,15 @@
-var sander = require( 'sander' );
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-module.exports = function () {
-	sander.rimrafSync( __dirname, 'actual', 'foo.coffee' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.coffee' );
+export default function () {
+	const dirname = fileURLToPath(new URL('.', import.meta.url));
 
-	sander.rimrafSync( __dirname, 'actual', 'foo.js' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.js' );
+	fs.unlinkSync(`${dirname}/actual/foo.coffee`);
+	fs.unlinkSync(`${dirname}/actual/bar.coffee`);
 
-	sander.rimrafSync( __dirname, 'actual', 'foo.js.map' );
-	sander.rimrafSync( __dirname, 'actual', 'bar.js.map' );
-};
+	fs.unlinkSync(`${dirname}/actual/foo.js`);
+	fs.unlinkSync(`${dirname}/actual/bar.js`);
+
+	fs.unlinkSync(`${dirname}/actual/foo.js.map`);
+	fs.unlinkSync(`${dirname}/actual/bar.js.map`);
+}

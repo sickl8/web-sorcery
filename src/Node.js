@@ -1,98 +1,115 @@
-import { dirname, resolve } from 'path';
-import { readFile, readFileSync, Promise } from 'sander';
+import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { decode } from '@jridgewell/sourcemap-codec';
 import getMap from './utils/getMap.js';
 
-export default function Node ({ file, content }) {
-	this.file = file ? resolve( file ) : null;
-	this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
+export default class Node {
+	/**
+	 * @param {{
+	 *   file?: string;
+	 *   content?: string;
+	 * }} opts
+	 */
+	constructor({ file, content }) {
+		this.file = file ? resolve(file) : null;
+		this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
 
-	if ( !this.file && this.content === null ) {
-		throw new Error( 'A source must specify either file or content' );
+		if (!this.file && this.content === null) {
+			throw new Error('A source must specify either file or content');
+		}
+
+		// these get filled in later
+		this.map = null;
+		this.mappings = null;
+		this.sources = null;
+		this.isOriginalSource = null;
+
+		this._stats = {
+			decodingTime: 0,
+			encodingTime: 0,
+			tracingTime: 0,
+
+			untraceable: 0
+		};
 	}
 
-	// these get filled in later
-	this.map = null;
-	this.mappings = null;
-	this.sources = null;
-	this.isOriginalSource = null;
+	load(sourcesContentByPath, sourceMapByPath) {
+		return getContent(this, sourcesContentByPath).then((content) => {
+			this.content = sourcesContentByPath[this.file] = content;
 
-	this._stats = {
-		decodingTime: 0,
-		encodingTime: 0,
-		tracingTime: 0,
-
-		untraceable: 0
-	};
-}
-
-Node.prototype = {
-	load ( sourcesContentByPath, sourceMapByPath ) {
-		return getContent( this, sourcesContentByPath ).then( content => {
-			this.content = sourcesContentByPath[ this.file ] = content;
-
-			return getMap( this, sourceMapByPath ).then( map => {
-				if ( !map ) return null;
+			return getMap(this, sourceMapByPath).then((map) => {
+				if (!map) return null;
 
 				this.map = map;
 
 				let decodingStart = process.hrtime();
-				this.mappings = decode( map.mappings );
-				let decodingTime = process.hrtime( decodingStart );
+				this.mappings = decode(map.mappings);
+				let decodingTime = process.hrtime(decodingStart);
 				this._stats.decodingTime = 1e9 * decodingTime[0] + decodingTime[1];
 
 				const sourcesContent = map.sourcesContent || [];
 
-				const sourceRoot = resolve( dirname( this.file || '' ), map.sourceRoot || '' );
+				const sourceRoot = resolve(
+					dirname(this.file || ''),
+					map.sourceRoot || ''
+				);
 
-				this.sources = map.sources.map( ( source, i ) => {
+				this.sources = map.sources.map((source, i) => {
 					return new Node({
-						file: source ? resolve( sourceRoot, source ) : null,
+						file: source ? resolve(sourceRoot, source) : null,
 						content: sourcesContent[i]
 					});
 				});
 
-				const promises = this.sources.map( node => node.load( sourcesContentByPath, sourceMapByPath ) );
-				return Promise.all( promises );
+				const promises = this.sources.map((node) =>
+					node.load(sourcesContentByPath, sourceMapByPath)
+				);
+				return Promise.all(promises);
 			});
 		});
-	},
+	}
 
-	loadSync ( sourcesContentByPath, sourceMapByPath ) {
-		if ( !this.content ) {
-			if ( !sourcesContentByPath[ this.file ] ) {
-				sourcesContentByPath[ this.file ] = readFileSync( this.file, { encoding: 'utf-8' });
+	loadSync(sourcesContentByPath, sourceMapByPath) {
+		if (!this.content) {
+			if (!sourcesContentByPath[this.file]) {
+				sourcesContentByPath[this.file] = readFileSync(this.file, {
+					encoding: 'utf-8'
+				});
 			}
 
-			this.content = sourcesContentByPath[ this.file ];
+			this.content = sourcesContentByPath[this.file];
 		} else {
-			sourcesContentByPath[ this.file ] = this.content;
+			sourcesContentByPath[this.file] = this.content;
 		}
 
-		const map = getMap( this, sourceMapByPath, true );
+		const map = getMap(this, sourceMapByPath, true);
 		let sourcesContent;
 
-		if ( !map ) {
+		if (!map) {
 			this.isOriginalSource = true;
 		} else {
 			this.map = map;
-			this.mappings = decode( map.mappings );
+			this.mappings = decode(map.mappings);
 
 			sourcesContent = map.sourcesContent || [];
 
-			const sourceRoot = resolve( dirname( this.file || '' ), map.sourceRoot || '' );
+			const sourceRoot = resolve(
+				dirname(this.file || ''),
+				map.sourceRoot || ''
+			);
 
-			this.sources = map.sources.map( ( source, i ) => {
+			this.sources = map.sources.map((source, i) => {
 				const node = new Node({
-					file: resolve( sourceRoot, source ),
+					file: resolve(sourceRoot, source),
 					content: sourcesContent[i]
 				});
 
-				node.loadSync( sourcesContentByPath, sourceMapByPath );
+				node.loadSync(sourcesContentByPath, sourceMapByPath);
 				return node;
 			});
 		}
-	},
+	}
 
 	/**
 	 * Traces a segment back to its origin
@@ -100,19 +117,19 @@ Node.prototype = {
 	   segment as found in `this`
 	 * @param {number} columnIndex - the zero-based column index of the
 	   segment as found in `this`
-	 * @param {string || null} - if specified, the name that should be
+	 * @param {string | null} name - if specified, the name that should be
 	   (eventually) returned, as it is closest to the generated code
 	 * @returns {object}
 	     @property {string} source - the filepath of the source
 	     @property {number} line - the one-based line index
 	     @property {number} column - the zero-based column index
-	     @property {string || null} name - the name corresponding
+	     @property {string | null} name - the name corresponding
 	     to the segment being traced
 	 */
-	trace ( lineIndex, columnIndex, name ) {
+	trace(lineIndex, columnIndex, name) {
 		// If this node doesn't have a source map, we have
 		// to assume it is the original source
-		if ( this.isOriginalSource ) {
+		if (this.isOriginalSource) {
 			return {
 				source: this.file,
 				line: lineIndex + 1,
@@ -123,33 +140,37 @@ Node.prototype = {
 
 		// Otherwise, we need to figure out what this position in
 		// the intermediate file corresponds to in *its* source
-		const segments = this.mappings[ lineIndex ];
+		const segments = this.mappings[lineIndex];
 
-		if ( !segments || segments.length === 0 ) {
+		if (!segments || segments.length === 0) {
 			return null;
 		}
 
-		if ( columnIndex != null ) {
+		if (columnIndex != null) {
 			let len = segments.length;
 			let i;
 
-			for ( i = 0; i < len; i += 1 ) {
+			for (i = 0; i < len; i += 1) {
 				let generatedCodeColumn = segments[i][0];
 
-				if ( generatedCodeColumn > columnIndex ) {
+				if (generatedCodeColumn > columnIndex) {
 					break;
 				}
 
-				if ( generatedCodeColumn === columnIndex ) {
-					if ( segments[i].length < 4 ) return null;
+				if (generatedCodeColumn === columnIndex) {
+					if (segments[i].length < 4) return null;
 
 					let sourceFileIndex = segments[i][1];
 					let sourceCodeLine = segments[i][2];
 					let sourceCodeColumn = segments[i][3];
 					let nameIndex = segments[i][4];
 
-					let parent = this.sources[ sourceFileIndex ];
-					return parent.trace( sourceCodeLine, sourceCodeColumn, this.map.names[ nameIndex ] || name );
+					let parent = this.sources[sourceFileIndex];
+					return parent.trace(
+						sourceCodeLine,
+						sourceCodeColumn,
+						this.map.names[nameIndex] || name
+					);
 				}
 			}
 		}
@@ -159,19 +180,23 @@ Node.prototype = {
 		let sourceCodeLine = segments[0][2];
 		let nameIndex = segments[0][4];
 
-		let parent = this.sources[ sourceFileIndex ];
-		return parent.trace( sourceCodeLine, null, this.map.names[ nameIndex ] || name );
+		let parent = this.sources[sourceFileIndex];
+		return parent.trace(
+			sourceCodeLine,
+			null,
+			this.map.names[nameIndex] || name
+		);
 	}
-};
+}
 
-function getContent ( node, sourcesContentByPath ) {
-	if ( node.file in sourcesContentByPath ) {
-		node.content = sourcesContentByPath[ node.file ];
+function getContent(node, sourcesContentByPath) {
+	if (node.file in sourcesContentByPath) {
+		node.content = sourcesContentByPath[node.file];
 	}
 
-	if ( !node.content ) {
-		return readFile( node.file, { encoding: 'utf-8' });
+	if (!node.content) {
+		return readFile(node.file, 'utf-8');
 	}
 
-	return Promise.resolve( node.content );
+	return Promise.resolve(node.content);
 }

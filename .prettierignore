@@ -1,0 +1,4 @@
+/test/cli/*/actual
+/test/cli/*/expected
+/test/cli/*/files
+/test/samples

@@ -1,34 +1,17 @@
-var path = require( 'path' );
-var exec = require( 'child_process' ).exec;
-var sander = require( 'sander' );
-var promiseMapSeries = require( 'promise-map-series' );
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-sander.readdir( __dirname ).then( function ( samples ) {
-	var filtered = samples.filter( function ( dir ) {
-		return sander.statSync( __dirname, dir ).isDirectory();
-	});
+const dirname = fileURLToPath(new URL('.', import.meta.url));
 
-	return promiseMapSeries( filtered, function ( dir ) {
-		process.chdir( path.join( __dirname, dir ) );
+const samples = fs.readdirSync(dirname).filter(dir => fs.statSync(path.join(dirname, dir)).isDirectory());
 
-		return new Promise( function ( fulfil, reject ) {
-			// check it exists
-			sander.readFile( 'build.sh' )
-				.then( function () {
-					exec( 'sh ./build.sh', function ( err, stdout, stderr ) {
-						if ( err ) {
-							reject( err );
-						} else {
-							console.log( stdout );
-							console.error( stderr );
-							console.log( 'ran %s build script', dir );
-							fulfil();
-						}
-					});
-				}, function () {
-					// file doesn't exist, nothing to build
-					fulfil();
-				});
-		});
-	});
-});
+for (const dir of samples) {
+	process.chdir(path.join(dirname, dir));
+
+	// check it exists
+	if (fs.existsSync('build.sh')) {
+		execSync('sh ./build.sh');
+	}
+}

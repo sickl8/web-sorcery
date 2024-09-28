@@ -1,6 +1,6 @@
-import SOURCEMAPPING_URL from './sourceMappingURL.js';
+import SOURCEMAPPING_URL from "./sourceMappingURL.ts";
 
-export default function getSourceMappingUrl(str) {
+export default function getSourceMappingUrl(str: string) {
 	var index, substring, url, match;
 
 	// assume we want the last occurence

@@ -1,12 +1,11 @@
-import { dirname, resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
-import atob from './atob.js';
-import SOURCEMAPPING_URL from './sourceMappingURL.js';
+import { dirname, resolve } from "path-browserify";
+import { readFileSync } from "./readFile.ts";
+import SOURCEMAPPING_URL from "./sourceMappingURL.ts";
 
-function parseJSON(json, url) {
+function parseJSON(json: string, url: string) {
 	try {
 		return JSON.parse(json);
-	} catch (err) {
+	} catch (err: any) {
 		throw new Error(`Could not parse sourcemap (${url}): ${err.message}`);
 	}
 }
@@ -21,7 +20,7 @@ function parseJSON(json, url) {
    return the sourcemap
  * @returns {object} - a version 3 sourcemap
  */
-export default function getMapFromUrl(url, base, sync) {
+export default function getMapFromUrl(url: string, base: string, sync: boolean) {
 	if (/^data:/.test(url)) {
 		// TODO beef this up
 		const match = /base64,(.+)$/.exec(url);

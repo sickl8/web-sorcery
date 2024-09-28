@@ -1,17 +1,27 @@
-import { dirname, resolve } from 'node:path';
-import { readFileSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import { decode } from '@jridgewell/sourcemap-codec';
-import getMap from './utils/getMap.js';
+import { dirname, resolve } from "path-browserify";
+import { readFileSync, readFile } from "./utils/readFile.ts";
+import SourceMap from "./SourceMap.ts";
+import getMap from "./utils/getMap.ts";
+import { decode, SourceMapMappings } from "./utils/mappingCodec.ts";
+import Chain from "./Chain.ts";
 
 export default class Node {
-	/**
-	 * @param {{
-	 *   file?: string;
-	 *   content?: string;
-	 * }} opts
-	 */
-	constructor({ file, content }) {
+	file: string | null;
+	content: string | null;
+	isOriginalSource: boolean | null;
+	mappings: SourceMapMappings | null;
+	_stats: {
+		decodingTime: number,
+		encodingTime: number,
+		tracingTime: number,
+		untraceable: number
+	};
+	map: SourceMap | null;
+	sources: Node[] | null;
+	constructor({ file, content }: {
+	    file?: string | null;
+	    content?: string | null;
+	  }) {
 		this.file = file ? resolve(file) : null;
 		this.content = content || null; // sometimes exists in sourcesContent, sometimes doesn't
 
@@ -34,9 +44,9 @@ export default class Node {
 		};
 	}
 
-	load(sourcesContentByPath, sourceMapByPath) {
+	load(sourcesContentByPath: Record<string, string>, sourceMapByPath: Record<string, SourceMap>): Promise<any> {
 		return getContent(this, sourcesContentByPath).then((content) => {
-			this.content = sourcesContentByPath[this.file] = content;
+			this.content = sourcesContentByPath[this.file!] = content;
 
 			return getMap(this, sourceMapByPath).then((map) => {
 				if (!map) return null;
@@ -63,28 +73,28 @@ export default class Node {
 				});
 
 				const promises = this.sources.map((node) =>
-					node.load(sourcesContentByPath, sourceMapByPath)
+					node.load(sourcesContentByPath, sourceMapByPath) as Promise<Chain>
 				);
 				return Promise.all(promises);
 			});
 		});
 	}
 
-	loadSync(sourcesContentByPath, sourceMapByPath) {
+	loadSync(sourcesContentByPath: Record<string, string>, sourceMapByPath: Record<string, SourceMap>) {
 		if (!this.content) {
-			if (!sourcesContentByPath[this.file]) {
-				sourcesContentByPath[this.file] = readFileSync(this.file, {
+			if (!sourcesContentByPath[this.file!]) {
+				sourcesContentByPath[this.file!] = readFileSync(this.file!, {
 					encoding: 'utf-8'
 				});
 			}
 
-			this.content = sourcesContentByPath[this.file];
+			this.content = sourcesContentByPath[this.file!];
 		} else {
-			sourcesContentByPath[this.file] = this.content;
+			sourcesContentByPath[this.file!] = this.content;
 		}
 
 		const map = getMap(this, sourceMapByPath, true);
-		let sourcesContent;
+		let sourcesContent: (string | null)[];
 
 		if (!map) {
 			this.isOriginalSource = true;
@@ -126,12 +136,17 @@ export default class Node {
 	     @property {string | null} name - the name corresponding
 	     to the segment being traced
 	 */
-	trace(lineIndex, columnIndex, name) {
+	trace(lineIndex: number, columnIndex: number, name: string | null): {
+		source: string;
+		line: number;
+		column: number;
+		name: string | null;
+	} | null {
 		// If this node doesn't have a source map, we have
 		// to assume it is the original source
 		if (this.isOriginalSource) {
 			return {
-				source: this.file,
+				source: this.file!,
 				line: lineIndex + 1,
 				column: columnIndex || 0,
 				name: name
@@ -140,7 +155,7 @@ export default class Node {
 
 		// Otherwise, we need to figure out what this position in
 		// the intermediate file corresponds to in *its* source
-		const segments = this.mappings[lineIndex];
+		const segments = this.mappings![lineIndex];
 
 		if (!segments || segments.length === 0) {
 			return null;
@@ -165,11 +180,11 @@ export default class Node {
 					let sourceCodeColumn = segments[i][3];
 					let nameIndex = segments[i][4];
 
-					let parent = this.sources[sourceFileIndex];
+					let parent = this.sources![sourceFileIndex!];
 					return parent.trace(
-						sourceCodeLine,
-						sourceCodeColumn,
-						this.map.names[nameIndex] || name
+						sourceCodeLine!,
+						sourceCodeColumn!,
+						this.map!.names[nameIndex!] || name
 					);
 				}
 			}
@@ -180,22 +195,22 @@ export default class Node {
 		let sourceCodeLine = segments[0][2];
 		let nameIndex = segments[0][4];
 
-		let parent = this.sources[sourceFileIndex];
+		let parent = this.sources![sourceFileIndex!];
 		return parent.trace(
-			sourceCodeLine,
-			null,
-			this.map.names[nameIndex] || name
+			sourceCodeLine!,
+			null!,
+			this.map!.names[nameIndex!] || name
 		);
 	}
 }
 
-function getContent(node, sourcesContentByPath) {
-	if (node.file in sourcesContentByPath) {
-		node.content = sourcesContentByPath[node.file];
+function getContent(node: Node, sourcesContentByPath: Record<string, string>) {
+	if (node.file! in sourcesContentByPath) {
+		node.content = sourcesContentByPath[node.file!];
 	}
 
 	if (!node.content) {
-		return readFile(node.file, 'utf-8');
+		return readFile(node.file!, 'utf-8');
 	}
 
 	return Promise.resolve(node.content);

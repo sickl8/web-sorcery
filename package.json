@@ -1,46 +1,43 @@
 {
-	"name": "sorcery",
-	"description": "Resolve a chain of sourcemaps back to the original source",
+	"name": "web-sorcery",
+	"description": "Resolve a chain of sourcemaps back to the original source, this fork works in a browser environment",
 	"version": "1.0.0",
-	"author": "Rich Harris",
-	"repository": "https://github.com/Rich-Harris/sorcery",
+	"author": "Sick Leviathan",
+	"repository": "https://github.com/sickl8/web-sorcery",
 	"type": "module",
 	"exports": {
 		".": {
-			"types": "./types/index.d.ts",
-			"default": "./src/index.js"
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
 		}
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@jridgewell/sourcemap-codec": "^1.4.14",
-		"minimist": "^1.2.0",
-		"tiny-glob": "^0.2.9"
+		"path-browserify": "^1.0.1",
+		"vlq": "^2.0.4"
 	},
 	"devDependencies": {
 		"@types/node": "^20.14.2",
+		"@types/path-browserify": "^1.0.3",
 		"coffee-script": "^1.10.0",
 		"less": "^2.6.1",
 		"prettier": "^3.3.2",
 		"rimraf": "^5.0.7",
 		"source-map": "^0.5.3",
+		"tiny-glob": "^0.2.9",
 		"typescript": "^5.4.5",
 		"uglify-js": "^2.6.2"
 	},
-	"bin": {
-		"sorcery": "bin/sorcery"
-	},
 	"scripts": {
 		"build": "tsc",
-		"prepare-tests": "node test/samples/prepare-tests.js",
+		"prepare-tests": "node test/samples/prepare-tests.ts",
 		"prepublishOnly": "pnpm test && pnpm build",
 		"lint": "prettier .",
 		"format": "prettier --write .",
-		"test": "node test/sorcery.test.js"
+		"test": "node test/sorcery.test.ts"
 	},
 	"files": [
 		"src/",
-		"bin/",
 		"README.md"
 	],
 	"packageManager": "pnpm@9.3.0"

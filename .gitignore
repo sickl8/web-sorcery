@@ -1,6 +1,28 @@
+!.vscode/extensions.json
 .DS_Store
-node_modules
-cli-test
+.idea
 .tmp
-dist
+.vscode/*
+*.local
+*.log
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+# dependencies
+# editor directories and files
+# logs
+# production
+build
+cli-test
 coverage
+dist
+dist-ssr
+lerna-debug.log*
+logs
+node_modules
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*

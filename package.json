@@ -2,7 +2,7 @@
 	"name": "web-sorcery",
 	"description": "Resolve a chain of sourcemaps back to the original source, this fork works in a browser environment",
 	"version": "1.0.0",
-	"author": "Sick Leviathan",
+	"author": "sickl8",
 	"repository": "https://github.com/sickl8/web-sorcery",
 	"keywords": [
 		"sorcery",

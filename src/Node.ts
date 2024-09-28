@@ -4,6 +4,7 @@ import SourceMap from "./SourceMap.ts";
 import getMap from "./utils/getMap.ts";
 import { decode, SourceMapMappings } from "./utils/mappingCodec.ts";
 import Chain from "./Chain.ts";
+import hrtime from "browser-hrtime";
 
 export default class Node {
 	file: string | null;
@@ -53,9 +54,9 @@ export default class Node {
 
 				this.map = map;
 
-				let decodingStart = process.hrtime();
+				let decodingStart = hrtime();
 				this.mappings = decode(map.mappings);
-				let decodingTime = process.hrtime(decodingStart);
+				let decodingTime = hrtime(decodingStart);
 				this._stats.decodingTime = 1e9 * decodingTime[0] + decodingTime[1];
 
 				const sourcesContent = map.sourcesContent || [];

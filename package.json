@@ -1,7 +1,7 @@
 {
 	"name": "web-sorcery",
 	"description": "Resolve a chain of sourcemaps back to the original source, this fork works in a browser environment",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"author": "sickl8",
 	"repository": "https://github.com/sickl8/web-sorcery",
 	"keywords": [
@@ -26,7 +26,8 @@
 		"dist"
 	],
 	"scripts": {
-		"dev": "tsc && vite build --watch",
+		"dev": "vite",
+		"dev:package": "tsc && vite build --watch",
 		"start": "vite --host --open",
 		"build": "tsc && vite build",
 		"build:types": "dts-bundle-generator --config ./dts-bundle-generator.config.ts",
@@ -37,32 +38,38 @@
 	},
 	"license": "MIT",
 	"dependencies": {
+		"browser-hrtime": "^1.1.8",
 		"path-browserify": "^1.0.1",
 		"vlq": "^2.0.4"
 	},
 	"devDependencies": {
 		"@types/node": "^20.14.2",
 		"@types/path-browserify": "^1.0.3",
-		"coffee-script": "^1.10.0",
-		"less": "^2.6.1",
-		"rimraf": "^5.0.7",
-		"source-map": "^0.5.3",
-		"tiny-glob": "^0.2.9",
-		"typescript": "^5.4.5",
-		"uglify-js": "^2.6.2",
 		"@typescript-eslint/eslint-plugin": "^7.1.0",
 		"@typescript-eslint/parser": "^7.1.0",
+		"coffeescript": "^2.7.0",
 		"dts-bundle-generator": "^9.5.1",
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
+		"less": "^2.6.1",
 		"prettier": "^3.3.1",
+		"rimraf": "^5.0.7",
+		"source-map": "^0.5.3",
 		"stylelint": "^16.2.1",
 		"stylelint-config-recommended": "^14.0.0",
 		"stylelint-config-sass-guidelines": "^11.0.0",
+		"tiny-glob": "^0.2.9",
 		"tslib": "^2.6.2",
+		"typescript": "^5.4.5",
+		"uglify-js": "^2.6.2",
 		"vite": "^5.2.13",
 		"vite-plugin-dts": "^3.9.1"
 	},
-	"packageManager": "pnpm@9.3.0"
+	"packageManager": "pnpm@9.3.0",
+	"pnpm": {
+		"patchedDependencies": {
+			"path-browserify": "patches/path-browserify.patch"
+		}
+	}
 }

@@ -4,6 +4,7 @@ import slash from "./utils/slash.ts";
 import SOURCEMAPPING_URL from "./utils/sourceMappingURL.ts";
 import Node from "./Node.ts";
 import { encode, SourceMapSegment, SourceMapSegmentFive } from "./utils/mappingCodec.ts";
+import hrtime from "browser-hrtime";
 
 const SOURCEMAP_COMMENT = new RegExp(
 	`\n*(?:` +
@@ -91,7 +92,7 @@ export default class Chain {
 		};
 
 		// Trace mappings
-		let tracingStart = process.hrtime();
+		let tracingStart = hrtime();
 
 		let i = this.node.mappings!.length;
 		let resolved = new Array(i);
@@ -107,13 +108,13 @@ export default class Chain {
 			}
 		}
 
-		let tracingTime = process.hrtime(tracingStart);
+		let tracingTime = hrtime(tracingStart);
 		this._stats.tracingTime = 1e9 * tracingTime[0] + tracingTime[1];
 
 		// Encode mappings
-		let encodingStart = process.hrtime();
+		let encodingStart = hrtime();
 		let mappings = encode(resolved);
-		let encodingTime = process.hrtime(encodingStart);
+		let encodingTime = hrtime(encodingStart);
 		this._stats.encodingTime = 1e9 * encodingTime[0] + encodingTime[1];
 
 		let includeContent = options.includeContent !== false;

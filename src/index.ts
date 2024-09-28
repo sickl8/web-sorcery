@@ -14,7 +14,7 @@ import SourceMap from "./SourceMap.ts";
 export function load(file: string, options: {
 	content?: Record<string, string>;
 	sourcemaps?: Record<string, SourceMap>;
-}) {
+} = {}) {
 	const { node, sourcesContentByPath, sourceMapByPath } = init(file, options);
 
 	return node

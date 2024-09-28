@@ -1,0 +1,22 @@
+diff --git a/index.js b/index.js
+index 24235288130acf35900f66f60c350d19583816e6..5da13af72838463df98a7749e5c9bbcf7bc64c24 100644
+--- a/index.js
++++ b/index.js
+@@ -113,16 +113,13 @@ var posix = {
+   resolve: function resolve() {
+     var resolvedPath = '';
+     var resolvedAbsolute = false;
+-    var cwd;
+ 
+     for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+       var path;
+       if (i >= 0)
+         path = arguments[i];
+       else {
+-        if (cwd === undefined)
+-          cwd = process.cwd();
+-        path = cwd;
++        path = "/";
+       }
+ 
+       assertPath(path);

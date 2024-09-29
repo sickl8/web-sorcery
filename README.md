@@ -1,12 +1,16 @@
 # web-sorcery
 
+[![alt Support Me on Ko-Fi](/public/kofi_button_red.png)](https://ko-fi.com/sickl8)
+
+This is a fork of [Rich Harris' npm package sorcery](https://www.npmjs.com/package/sorcery) that is intended to work in a browser environment, it's dependencies are optimized and it's ported to typescript for full typing support.
+
 Sourcemaps are great - if you have a JavaScript file, and you minify it, your minifier can generate a map that lets you debug as though you were looking at the original uncompressed code.
 
 But if you have more than one transformation - say you want to transpile your JavaScript, concatenate several files into one, and minify the result - it gets a little trickier. Each intermediate step needs to be able to both _ingest_ a sourcemap and _generate_ one, all the time pointing back to the original source.
 
 Most compilers don't do that. ([UglifyJS](https://github.com/mishoo/UglifyJS2) is an honourable exception.) So when you fire up devtools, instead of looking at the original source you find yourself looking at the final intermediate step in the chain of transformations.
 
-**Sorcery aims to fix that.** Given a file at the end of a transformation chain (e.g., your minified JavaScript), it will follow the entire chain back to the original source, and generate a new sourcemap that describes the whole process. How? Magic.
+**web-sorcery aims to fix that.** Given a file at the end of a transformation chain (e.g., your minified JavaScript), it will follow the entire chain back to the original source, and generate a new sourcemap that describes the whole process. How? Magic.
 
 This is a work-in-progress - suitable for playing around with, but don't rely on it to debug air traffic control software or medical equipment. Other than that, it can't do much harm.
 
@@ -14,14 +18,14 @@ This is a work-in-progress - suitable for playing around with, but don't rely on
 
 ### As a node module
 
-Install sorcery locally:
+Install web-sorcery locally:
 
 ```bash
-npm install sorcery
+npm install web-sorcery
 ```
 
 ```js
-import * as sorcery from 'sorcery';
+import * as sorcery from 'web-sorcery';
 
 sorcery.load('some/generated/code.min.js').then(function (chain) {
   // generate a flattened sourcemap
@@ -71,8 +75,6 @@ sorcery.load( 'some/generated/code.min.js', {
   /* ... */
 });
 ```
-
-Any files not found will be read from the filesystem as normal.
 
 ## License
 
